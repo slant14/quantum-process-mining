@@ -2,7 +2,7 @@ name: Sync extraction sheet
 
 on:
   schedule:
-    - cron: "0 9,15,21 * * *"   # 12:17 / 18:17 / 00:17 Moscow
+    - cron: "0 9,15,21 * * *"   # 12:00 / 18:00 / 00:00 Moscow
   workflow_dispatch:
 
 concurrency:
