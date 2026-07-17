@@ -2,7 +2,7 @@ name: Sync extraction sheet
 
 on:
   schedule:
-    - cron: "0 9,15,21 * * *"   # 12:00 / 18:00 / 00:00 Moscow
+    - cron: "0 9,15,21 * * *"   # 12:17 / 18:17 / 00:17 Moscow
   workflow_dispatch:
 
 concurrency:
@@ -32,8 +32,9 @@ jobs:
 
       - name: Validate + normalize
         env:
-          SORT_KEY: id
-          REQUIRED_COLS: id,title
+          SORT_KEY: Paper_ID
+          REQUIRED_COLS: Paper_ID,Title,Screening_Stage,Screening_Status
+          SKIP_ID_PREFIX: P000-EXAMPLE
         run: python3 scripts/normalize_csv.py /tmp/raw.csv data/papers.csv
 
       - name: Commit if changed
