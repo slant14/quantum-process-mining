@@ -1,0 +1,109 @@
+OPENQASM 3.0;
+include "stdgates.inc";
+bit[6] bsm0;
+bit[2] psm0;
+bit[1] m0;
+qubit[9] q0;
+qubit[6] bs0;
+qubit[2] ps0;
+cx q0[0], q0[3];
+h q0[3];
+cx q0[3], q0[4];
+cx q0[3], q0[5];
+cx q0[0], q0[6];
+h q0[0];
+cx q0[0], q0[1];
+cx q0[0], q0[2];
+h q0[6];
+cx q0[6], q0[7];
+cx q0[6], q0[8];
+barrier q0[0], q0[1], q0[2], q0[3], q0[4], q0[5], q0[6], q0[7], q0[8], bs0[0], bs0[1], bs0[2], bs0[3], bs0[4], bs0[5], ps0[0], ps0[1];
+cx q0[0], bs0[0];
+cx q0[1], bs0[1];
+cx q0[2], bs0[0];
+cx q0[2], bs0[1];
+cx q0[3], bs0[2];
+cx q0[4], bs0[3];
+cx q0[5], bs0[2];
+cx q0[5], bs0[3];
+cx q0[6], bs0[4];
+cx q0[7], bs0[5];
+cx q0[8], bs0[4];
+cx q0[8], bs0[5];
+barrier q0[0], q0[1], q0[2], q0[3], q0[4], q0[5], q0[6], q0[7], q0[8], bs0[0], bs0[1], bs0[2], bs0[3], bs0[4], bs0[5], ps0[0], ps0[1];
+h ps0[0];
+cx ps0[0], q0[0];
+cx ps0[0], q0[1];
+cx ps0[0], q0[2];
+cx ps0[0], q0[6];
+cx ps0[0], q0[7];
+cx ps0[0], q0[8];
+h ps0[0];
+h ps0[1];
+cx ps0[1], q0[3];
+cx ps0[1], q0[4];
+cx ps0[1], q0[5];
+cx ps0[1], q0[6];
+cx ps0[1], q0[7];
+cx ps0[1], q0[8];
+h ps0[1];
+barrier q0[0], q0[1], q0[2], q0[3], q0[4], q0[5], q0[6], q0[7], q0[8], bs0[0], bs0[1], bs0[2], bs0[3], bs0[4], bs0[5], ps0[0], ps0[1];
+bsm0[0] = measure bs0[0];
+bsm0[1] = measure bs0[1];
+bsm0[2] = measure bs0[2];
+bsm0[3] = measure bs0[3];
+bsm0[4] = measure bs0[4];
+bsm0[5] = measure bs0[5];
+if (bsm0 == 1) {
+  x q0[0];
+}
+if (bsm0 == 2) {
+  x q0[1];
+}
+if (bsm0 == 3) {
+  x q0[2];
+}
+if (bsm0 == 4) {
+  x q0[3];
+}
+if (bsm0 == 8) {
+  x q0[4];
+}
+if (bsm0 == 12) {
+  x q0[5];
+}
+if (bsm0 == 16) {
+  x q0[6];
+}
+if (bsm0 == 32) {
+  x q0[7];
+}
+if (bsm0 == 48) {
+  x q0[8];
+}
+barrier q0[0], q0[1], q0[2], q0[3], q0[4], q0[5], q0[6], q0[7], q0[8], bs0[0], bs0[1], bs0[2], bs0[3], bs0[4], bs0[5], ps0[0], ps0[1];
+psm0[0] = measure ps0[0];
+psm0[1] = measure ps0[1];
+if (psm0 == 1) {
+  z q0[0];
+}
+if (psm0 == 2) {
+  z q0[3];
+}
+if (psm0 == 3) {
+  z q0[6];
+}
+barrier q0[0], q0[1], q0[2], q0[3], q0[4], q0[5], q0[6], q0[7], q0[8], bs0[0], bs0[1], bs0[2], bs0[3], bs0[4], bs0[5], ps0[0], ps0[1];
+cx q0[0], q0[1];
+cx q0[0], q0[2];
+h q0[0];
+cx q0[3], q0[4];
+cx q0[3], q0[5];
+h q0[3];
+cx q0[0], q0[3];
+cx q0[6], q0[7];
+cx q0[6], q0[8];
+h q0[6];
+cx q0[0], q0[6];
+m0[0] = measure q0[0];
+barrier q0[0], q0[1], q0[2], q0[3], q0[4], q0[5], q0[6], q0[7], q0[8], bs0[0], bs0[1], bs0[2], bs0[3], bs0[4], bs0[5], ps0[0], ps0[1];

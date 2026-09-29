@@ -1,0 +1,34 @@
+OPENQASM 3.0;
+include "stdgates.inc";
+gate qft_dg _gate_q_0, _gate_q_1, _gate_q_2 {
+  swap _gate_q_0, _gate_q_2;
+  h _gate_q_0;
+  cp(-pi/2) _gate_q_1, _gate_q_0;
+  h _gate_q_1;
+  cp(-pi/4) _gate_q_2, _gate_q_0;
+  cp(-pi/2) _gate_q_2, _gate_q_1;
+  h _gate_q_2;
+}
+bit[6] meas;
+qubit[6] q;
+h q[5];
+cp(pi/2) q[5], q[4];
+h q[4];
+cp(pi/4) q[5], q[3];
+cp(pi/2) q[4], q[3];
+h q[3];
+swap q[3], q[5];
+cp(pi) q[0], q[5];
+cp(pi/2) q[0], q[4];
+cp(pi/4) q[0], q[3];
+cp(pi) q[1], q[4];
+cp(pi/2) q[1], q[3];
+cp(pi) q[2], q[3];
+qft_dg q[3], q[4], q[5];
+barrier q[0], q[1], q[2], q[3], q[4], q[5];
+meas[0] = measure q[0];
+meas[1] = measure q[1];
+meas[2] = measure q[2];
+meas[3] = measure q[3];
+meas[4] = measure q[4];
+meas[5] = measure q[5];

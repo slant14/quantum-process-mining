@@ -1,0 +1,4 @@
+# pennylane-qiskit is required for qml.from_qasm and pins its own Qiskit (2.3.0),
+# which is why PennyLane has its own venv.
+pennylane==0.45.1
+pennylane-qiskit==0.45.0

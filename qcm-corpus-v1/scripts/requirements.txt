@@ -1,0 +1,2 @@
+mqt.bench==2.3.0
+qiskit==2.5.2

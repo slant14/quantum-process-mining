@@ -1,0 +1,81 @@
+toolchain,activity,stage,basis,status
+bqskit,ApplyPlacement,layout,docs,suggested
+bqskit,AutoRebase2QuditGatePass,synthesis,docs,suggested
+bqskit,ExtendBlockSizePass,partitioning,docs,suggested
+bqskit,ExtractMeasurements,setup,docs,suggested
+bqskit,ExtractModelConnectivityPass,setup,docs,suggested
+bqskit,FillSingleQuditGatesPass,partitioning,docs,suggested
+bqskit,ForEachBlockPass,control,container,suggested
+bqskit,GeneralizedSabreLayoutPass,layout,docs,suggested
+bqskit,GeneralizedSabreRoutingPass,routing,docs,suggested
+bqskit,GreedyPlacementPass,layout,docs,suggested
+bqskit,IfThenElsePass,control,container,suggested
+bqskit,LEAPSynthesisPass,synthesis,docs,suggested
+bqskit,LogErrorPass,setup,docs,suggested
+bqskit,LogPass,setup,docs,suggested
+bqskit,QSearchSynthesisPass,synthesis,docs,suggested
+bqskit,QuickPartitioner,partitioning,docs,suggested
+bqskit,RestoreMeasurements,setup,docs,suggested
+bqskit,RestoreModelConnectivityPass,setup,docs,suggested
+bqskit,ScanningGateRemovalPass,optimization,docs,suggested
+bqskit,SetModelPass,setup,docs,suggested
+bqskit,SetRandomSeedPass,setup,docs,suggested
+bqskit,UnfoldPass,partitioning,docs,suggested
+bqskit,Workflow,control,container,suggested
+cirq,RouteCQC.route_circuit,routing,docs,suggested
+cirq,_decompose_operations_to_target_gateset,synthesis,docs,suggested
+cirq,drop_empty_moments,cleanup,docs,suggested
+cirq,drop_negligible_operations,cleanup,docs,suggested
+cirq,eject_phased_paulis,optimization,docs,suggested
+cirq,eject_z,optimization,docs,suggested
+cirq,expand_composite,synthesis,docs,suggested
+cirq,merge_k_qubit_unitaries,optimization,docs,suggested
+cirq,merge_single_qubit_gates_to_phxz,optimization,docs,suggested
+cirq,merge_single_qubit_moments_to_phxz,optimization,docs,suggested
+cirq,optimize_for_target_gateset,synthesis,container; children do the work,suggested
+kirin,AggressiveUnroll,ir_lowering,internal; container,suggested
+kirin,CanonicalizeIList,cleanup,internal,suggested
+kirin,Fold,optimization,internal; constant folding,suggested
+kirin,HintConst,analysis,internal,suggested
+kirin,PostInference,analysis,internal,suggested
+kirin,QASM2Fold,optimization,configured; container,suggested
+kirin,QASM2Py,ir_lowering,configured; dialect conversion,suggested
+kirin,TypeInfer,analysis,internal,suggested
+kirin,UOpToParallel,scheduling,configured; neutral-atom gate parallelisation,suggested
+kirin,UnrollIfs,ir_lowering,internal,suggested
+kirin,UnrollScf,ir_lowering,internal,suggested
+pennylane,cancel_inverses,optimization,docs,suggested
+pennylane,commute_controlled,optimization,docs,suggested
+pennylane,decompose,synthesis,docs,suggested
+pennylane,merge_rotations,optimization,docs,suggested
+pennylane,remove_barrier,cleanup,docs,suggested
+pennylane,transpile,routing,docs: inserts SWAPs for coupling map,suggested
+qiskit,ApplyLayout,layout,native stage: layout,suggested
+qiskit,BarrierBeforeFinalMeasurements,layout,native stage: layout,suggested
+qiskit,BasisTranslator,synthesis,native stage: translation,suggested
+qiskit,CheckMap,routing,native stage: routing,suggested
+qiskit,CommutativeCancellation,optimization,native stage: optimization,suggested
+qiskit,ConsolidateBlocks,optimization,native stage: init,suggested
+qiskit,ContainsInstruction,analysis,pass docs,suggested
+qiskit,ContractIdleWiresInControlFlow,cleanup,native stage: optimization,suggested
+qiskit,Depth,analysis,native stage: optimization,suggested
+qiskit,ElidePermutations,optimization,native stage: init,suggested
+qiskit,EnlargeWithAncilla,layout,native stage: layout,suggested
+qiskit,FilterOpNodes,routing,native stage: routing,suggested
+qiskit,FixedPoint,analysis,native stage: optimization (loop test),suggested
+qiskit,FullAncillaAllocation,layout,native stage: layout,suggested
+qiskit,GatesInBasis,analysis,native stage: optimization,suggested
+qiskit,HighLevelSynthesis,synthesis,native stage: translation,suggested
+qiskit,InverseCancellation,optimization,native stage: init,suggested
+qiskit,Optimize1qGatesDecomposition,optimization,native stage: optimization,suggested
+qiskit,RemoveDiagonalGatesBeforeMeasure,optimization,native stage: init,suggested
+qiskit,RemoveIdentityEquivalent,optimization,native stage: init/optimization,suggested
+qiskit,SabreLayout,layout,native stage: layout,suggested
+qiskit,SabreSwap,routing,native stage: routing,suggested
+qiskit,SetLayout,layout,native stage: layout,suggested
+qiskit,Size,analysis,native stage: optimization,suggested
+qiskit,Split2QUnitaries,optimization,native stage: init,suggested
+qiskit,TwoQubitPeepholeOptimization,optimization,native stage: optimization,suggested
+qiskit,UnitarySynthesis,synthesis,native stage: translation,suggested
+qiskit,VF2Layout,layout,native stage: layout,suggested
+qiskit,VF2PostLayout,layout,native stage: routing (post-layout),suggested

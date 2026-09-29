@@ -1,0 +1,95 @@
+algorithm,requested_size,reason,secs
+bmw_quark_copula,3,ValueError: Number of qubits must be divisible by 2.,0.004
+bmw_quark_copula,5,ValueError: Number of qubits must be divisible by 2.,0.004
+bmw_quark_copula,7,ValueError: Number of qubits must be divisible by 2.,0.004
+cdkm_ripple_carry_adder,2,ValueError: num_qubits must be an even integer ≥ 4.,0.004
+cdkm_ripple_carry_adder,3,ValueError: num_qubits must be an even integer ≥ 4.,0.004
+cdkm_ripple_carry_adder,5,ValueError: num_qubits must be an even integer ≥ 4.,0.004
+cdkm_ripple_carry_adder,7,ValueError: num_qubits must be an even integer ≥ 4.,0.004
+draper_qft_adder,3,ValueError: num_qubits must be an even integer ≥ 2.,0.005
+draper_qft_adder,5,ValueError: num_qubits must be an even integer ≥ 2.,0.004
+draper_qft_adder,7,ValueError: num_qubits must be an even integer ≥ 2.,0.004
+full_adder,2,ValueError: num_qubits must be an even integer ≥ 4.,0.005
+full_adder,3,ValueError: num_qubits must be an even integer ≥ 4.,0.004
+full_adder,5,ValueError: num_qubits must be an even integer ≥ 4.,0.004
+full_adder,7,ValueError: num_qubits must be an even integer ≥ 4.,0.004
+graphstate,2,NetworkXError: the 0 <= d < n inequality must be satisfied,0.112
+grover,12,Timeout>45s,45.049978256225586
+half_adder,2,ValueError: num_qubits must be an odd integer ≥ 3.,0.006
+half_adder,4,ValueError: num_qubits must be an odd integer ≥ 3.,0.004
+half_adder,6,ValueError: num_qubits must be an odd integer ≥ 3.,0.004
+half_adder,8,ValueError: num_qubits must be an odd integer ≥ 3.,0.004
+half_adder,10,ValueError: num_qubits must be an odd integer ≥ 3.,0.004
+half_adder,12,ValueError: num_qubits must be an odd integer ≥ 3.,0.004
+half_adder,14,ValueError: num_qubits must be an odd integer ≥ 3.,0.004
+half_adder,16,ValueError: num_qubits must be an odd integer ≥ 3.,0.004
+half_adder,20,ValueError: num_qubits must be an odd integer ≥ 3.,0.004
+half_adder,24,ValueError: num_qubits must be an odd integer ≥ 3.,0.004
+half_adder,32,ValueError: num_qubits must be an odd integer ≥ 3.,0.004
+hhl,2,ValueError: Number of qubits must be at least 3 for HHL.,0.004
+hrs_cumulative_multiplier,2,ValueError: num_qubits must be an integer ≥ 5 and (num_qubits - 1) must be divisible by 4.,0.004
+hrs_cumulative_multiplier,3,ValueError: num_qubits must be an integer ≥ 5 and (num_qubits - 1) must be divisible by 4.,0.004
+hrs_cumulative_multiplier,4,ValueError: num_qubits must be an integer ≥ 5 and (num_qubits - 1) must be divisible by 4.,0.004
+hrs_cumulative_multiplier,6,ValueError: num_qubits must be an integer ≥ 5 and (num_qubits - 1) must be divisible by 4.,0.004
+hrs_cumulative_multiplier,7,ValueError: num_qubits must be an integer ≥ 5 and (num_qubits - 1) must be divisible by 4.,0.004
+hrs_cumulative_multiplier,8,ValueError: num_qubits must be an integer ≥ 5 and (num_qubits - 1) must be divisible by 4.,0.004
+hrs_cumulative_multiplier,10,ValueError: num_qubits must be an integer ≥ 5 and (num_qubits - 1) must be divisible by 4.,0.004
+hrs_cumulative_multiplier,12,ValueError: num_qubits must be an integer ≥ 5 and (num_qubits - 1) must be divisible by 4.,0.004
+modular_adder,3,ValueError: num_qubits must be an even integer ≥ 2.,0.005
+modular_adder,5,ValueError: num_qubits must be an even integer ≥ 2.,0.004
+modular_adder,7,ValueError: num_qubits must be an even integer ≥ 2.,0.004
+multiplier,2,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.004
+multiplier,3,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.005
+multiplier,5,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.004
+multiplier,6,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.004
+multiplier,7,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.004
+multiplier,10,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.004
+qwalk,2,CircuitError: 'One or more of the arguments are empty',0.005
+qwalk,7,Timeout>45s,45.04869723320007
+qwalk,8,Timeout>45s,45.05192971229553
+qwalk,10,Timeout>45s,45.05075764656067
+qwalk,12,Timeout>45s,45.049903869628906
+rg_qft_multiplier,2,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.005
+rg_qft_multiplier,3,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.004
+rg_qft_multiplier,5,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.004
+rg_qft_multiplier,6,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.004
+rg_qft_multiplier,7,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.004
+rg_qft_multiplier,10,ValueError: num_qubits must be an integer ≥ 4 and divisible by 4.,0.004
+seven_qubit_steane_code,2,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,3,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,4,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,5,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,6,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,7,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,8,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,10,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,12,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,14,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,16,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,20,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,24,ValueError: num_qubits must be divisible by 13.,0.004
+seven_qubit_steane_code,32,ValueError: num_qubits must be divisible by 13.,0.004
+shors_nine_qubit_code,2,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,3,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,4,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,5,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,6,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,7,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,8,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,10,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,12,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,14,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,16,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,20,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,24,ValueError: num_qubits must be divisible by 17.,0.004
+shors_nine_qubit_code,32,ValueError: num_qubits must be divisible by 17.,0.004
+vbe_ripple_carry_adder,2,ValueError: num_qubits must be an integer ≥ 4 and (num_qubits - 1) must be divisible by 3.,0.004
+vbe_ripple_carry_adder,3,ValueError: num_qubits must be an integer ≥ 4 and (num_qubits - 1) must be divisible by 3.,0.004
+vbe_ripple_carry_adder,5,ValueError: num_qubits must be an integer ≥ 4 and (num_qubits - 1) must be divisible by 3.,0.006
+vbe_ripple_carry_adder,6,ValueError: num_qubits must be an integer ≥ 4 and (num_qubits - 1) must be divisible by 3.,0.006
+vbe_ripple_carry_adder,8,ValueError: num_qubits must be an integer ≥ 4 and (num_qubits - 1) must be divisible by 3.,0.006
+vbe_ripple_carry_adder,12,ValueError: num_qubits must be an integer ≥ 4 and (num_qubits - 1) must be divisible by 3.,0.006
+vbe_ripple_carry_adder,14,ValueError: num_qubits must be an integer ≥ 4 and (num_qubits - 1) must be divisible by 3.,0.006
+vbe_ripple_carry_adder,20,ValueError: num_qubits must be an integer ≥ 4 and (num_qubits - 1) must be divisible by 3.,0.006
+vbe_ripple_carry_adder,24,ValueError: num_qubits must be an integer ≥ 4 and (num_qubits - 1) must be divisible by 3.,0.006
+vbe_ripple_carry_adder,32,ValueError: num_qubits must be an integer ≥ 4 and (num_qubits - 1) must be divisible by 3.,0.006
