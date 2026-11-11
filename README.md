@@ -20,7 +20,35 @@ python3 run_all.py --limit 4 --max-qubits 5 --reps 1 --mem-reps 0 --out results-
 python3 run_all.py                      # full run (CORE selection, all tiers, 3+1 reps)
 
 .venv/bin/python merge_logs.py          # -> results/merged/
+
+# with failed compilations (one outcome event per case) and an OCEL 2.0 log
+.venv/bin/python merge_logs.py --include-failed --outcome-events --ocel --out results/merged_incl_failed
 ```
+
+### v2: many compiler settings in one log
+
+`experiments/v2_factorial.sh` runs every toolchain under each setting that changes
+what its pipeline executes, one folder per setting under `results/v2/`:
+- Qiskit at levels 0–3 × grid/line/all × seeds 42/1/2.
+- Cirq with `optimize_for_target_gateset` run once or to convergence
+  (`--opt-level '{"cirq":"converge"}'`).
+- BQSKit at levels 1–3, on other topologies and with other seeds.
+- Kirin with its `Fixpoint` rewrite iterations traced.
+- The EXTENDED circuits (`--selection EXTENDED`).
+
+The v1 run in `results/` stays the baseline. To merge everything into one log:
+
+```bash
+caffeinate -i ./experiments/v2_factorial.sh          # ~hours; resumable
+.venv/bin/python merge_logs.py --include-failed --outcome-events --ocel --out results/merged_v2 \
+  --results v1=results:qiskit,cirq,pennylane,bqskit $(ls -d results/v2/*/)
+.venv/bin/python experiments/variance_report.py v1=results/merged_incl_failed v2=results/merged_v2
+```
+
+With several `--results`, each case is tagged with `run`, `opt_level`, `topology` and
+`seed`, and its `case_id` is prefixed with the run name. The OCEL log gains a
+`configuration` object type. v1's Kirin data is left out of the merge above
+because v2 re-traced Kirin in more detail.
 
 Run the full job inside `tmux` or `screen`. If the laptop sleeps the run pauses; if it
 is killed, **re-run the same command** — finished cases are skipped.
@@ -76,7 +104,7 @@ import them; each worker carries its own tracing code.
 | Cirq 1.7.0 | `optimize_for_target_gateset(CZ)` → `RouteCQC` → re-target → merge/eject/drop cleanups | CZ + PhasedXZ | yes | `TransformerLogger` (captures nested transformers); router timed explicitly |
 | PennyLane 0.45.1 | `decompose` → `transpile(coupling_map)` → `decompose` → `qml.compile`'s default transforms | CNOT, RX, RY, RZ | yes | each transform timed |
 | BQSKit 1.2.1 | `build_workflow(opt 1)`, `num_workers=1`, fresh `Compiler()` per circuit | CZ, U3 | yes | every pass at every nesting level (branches, per-block loops) |
-| Kirin 0.22.14 / Bloqade 0.15.0 | `QASM2Py` → `QASM2Fold` → `UOpToParallel` | native | **no** | `unsafe_run` wrapped on every `Pass` subclass: unconfigured passes and fixpoint iterations included |
+| Kirin 0.22.14 / Bloqade 0.15.0 | `QASM2Py` → `QASM2Fold` → `UOpToParallel` | native | **no** | `unsafe_run` wrapped on every `Pass` subclass, so unconfigured (internal) passes are included. Since v2, every iteration of a `Fixpoint` rewrite loop is also an event (`pass_kind` = `rewrite_iteration`), and tracing overhead is subtracted |
 
 The bases are not identical, by necessity: PennyLane's `decompose` never reaches CZ
 from CNOT, and Kirin/Bloqade has no coupling-map router for this input. Both are
@@ -98,6 +126,15 @@ output-quality comparisons.
   case attribute `toolchain`); the pass vocabularies do not overlap.
 - `event_log_stages.xes` — activity = ontology stage, pure control-flow wrappers
   removed, consecutive repeats collapsed. The **cross-toolchain** view.
+- `event_log.ocel.sqlite` (`--ocel`) — OCEL 2.0. Object types: compilation,
+  circuit, toolchain, pass, stage. Every event links to its compilation, circuit
+  and toolchain; pass events also link to their pass and stage.
+
+Most failed compilations run no pass at all: load errors, timeouts, crashes, and
+BQSKit refusing to build a workflow. `--include-failed` alone therefore only adds
+the failures that ran at least one pass. `--outcome-events` ends every case with
+one event named after its status (`compilation ok`, `load error`,
+`compile error`, `timeout`, `crash`). With it, every compilation is in the log.
 
 Event columns: `event_index` (order within case — sort by this, not timestamp),
 `activity`, `activity_module`, `pass_kind`, `nesting_depth`, `parent_activity`

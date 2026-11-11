@@ -79,3 +79,9 @@ qiskit,TwoQubitPeepholeOptimization,optimization,native stage: optimization,sugg
 qiskit,UnitarySynthesis,synthesis,native stage: translation,suggested
 qiskit,VF2Layout,layout,native stage: layout,suggested
 qiskit,VF2PostLayout,layout,native stage: routing (post-layout),suggested
+qiskit,MinimumPoint,analysis,native stage: optimization (loop test at level 3; may restore the best circuit seen),suggested
+qiskit,TrivialLayout,layout,native stage: layout,suggested
+bqskit,WhileLoopPass,control,container (repeats a sub-workflow while a condition holds; level 3),suggested
+bqskit,GeneralSQDecomposition,synthesis,docs: retargets single-qudit gates to the gate set,suggested
+bqskit,GroupSingleQuditGatePass,partitioning,docs,suggested
+kirin,Fixpoint[DeadBlock+DuplicatedBranch+SkipBlock+CFGEdge],cleanup,rewrite loop outside any pass (CFG simplification while loading),suggested
