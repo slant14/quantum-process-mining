@@ -27,6 +27,39 @@ different source is named.
 
 ## Repository layout
 
+.venv/bin/python merge_logs.py          # -> results/merged/
+
+# with failed compilations (one outcome event per case) and an OCEL 2.0 log
+.venv/bin/python merge_logs.py --include-failed --outcome-events --ocel --out results/merged_incl_failed
+```
+
+### v2: many compiler settings in one log
+
+`experiments/v2_factorial.sh` runs every toolchain under each setting that changes
+what its pipeline executes, one folder per setting under `results/v2/`:
+- Qiskit at levels 0–3 × grid/line/all × seeds 42/1/2.
+- Cirq with `optimize_for_target_gateset` run once or to convergence
+  (`--opt-level '{"cirq":"converge"}'`).
+- BQSKit at levels 1–3, on other topologies and with other seeds.
+- Kirin with its `Fixpoint` rewrite iterations traced.
+- The EXTENDED circuits (`--selection EXTENDED`).
+
+The v1 run in `results/` stays the baseline. To merge everything into one log:
+
+```bash
+caffeinate -i ./experiments/v2_factorial.sh          # ~hours; resumable
+.venv/bin/python merge_logs.py --include-failed --outcome-events --ocel --out results/merged_v2 \
+  --results v1=results:qiskit,cirq,pennylane,bqskit $(ls -d results/v2/*/)
+.venv/bin/python experiments/variance_report.py v1=results/merged_incl_failed v2=results/merged_v2
+```
+
+With several `--results`, each case is tagged with `run`, `opt_level`, `topology` and
+`seed`, and its `case_id` is prefixed with the run name. The OCEL log gains a
+`configuration` object type. v1's Kirin data is left out of the merge above
+because v2 re-traced Kirin in more detail.
+
+Run the full job inside `tmux` or `screen`. If the laptop sleeps the run pauses; if it
+is killed, **re-run the same command** — finished cases are skipped.
 ```
 qcm-corpus-v1/            input corpus (fixed, versioned; do not regenerate)
   manifest.csv            338 circuits: width, depth, gate histogram, tiers, hashes, ...
@@ -154,6 +187,101 @@ traces vary for 15 of 144 CORE circuits even under a fixed seed.
 
 | Claim in `parts/main.tex` | Evidence |
 |---|---|
+| One venv per toolchain | `pennylane-qiskit` pins Qiskit 2.3.0; sharing an env would silently change the Qiskit being measured. |
+| Strictly one compilation at a time | Timing and memory are data; parallel runs contaminate both. |
+| Jobs shuffled (seed 42) across toolchains | No toolchain always runs first/last (thermal and cache drift). |
+| Warm-up compilation discarded on every worker (re)start | First run pays import/JIT/cache costs. |
+| `--reps 3` timing + `--mem-reps 1` memory, never mixed | `tracemalloc` roughly triples compile time in the smoke test. |
+| Barriers stripped for **every** toolchain (default) | Cirq cannot parse `barrier` (87% of files). Identical bytes go to all five; `input_sha16` proves it. `--keep-barriers` gives the raw coverage run. |
+| Each toolchain at its **own default** optimisation level | Qiskit 2, BQSKit 1; Cirq/PennyLane/Kirin have fixed pipelines. Override with `--opt-level '{"qiskit":3}'`. |
+| Same device for all: grid coupling map | `--topology grid|line|all`; device = smallest near-square grid ≥ circuit width. |
+| Timeout kills the worker's whole process group | BQSKit spawns runtime processes; nothing is left orphaned. |
+
+## What each toolchain runs
+
+| Toolchain | Pipeline | Basis | Routing | Tracing hook |
+|---|---|---|---|---|
+| Qiskit 2.5.2 | `generate_preset_pass_manager(2)` on `GenericBackendV2` (control flow on) | cz, u | yes | pass-manager callback; Qiskit times passes itself; native stage label per pass |
+| Cirq 1.7.0 | `optimize_for_target_gateset(CZ)` → `RouteCQC` → re-target → merge/eject/drop cleanups | CZ + PhasedXZ | yes | `TransformerLogger` (captures nested transformers); router timed explicitly |
+| PennyLane 0.45.1 | `decompose` → `transpile(coupling_map)` → `decompose` → `qml.compile`'s default transforms | CNOT, RX, RY, RZ | yes | each transform timed |
+| BQSKit 1.2.1 | `build_workflow(opt 1)`, `num_workers=1`, fresh `Compiler()` per circuit | CZ, U3 | yes | every pass at every nesting level (branches, per-block loops) |
+| Kirin 0.22.14 / Bloqade 0.15.0 | `QASM2Py` → `QASM2Fold` → `UOpToParallel` | native | **no** | `unsafe_run` wrapped on every `Pass` subclass, so unconfigured (internal) passes are included. Since v2, every iteration of a `Fixpoint` rewrite loop is also an event (`pass_kind` = `rewrite_iteration`), and tracing overhead is subtracted |
+
+The bases are not identical, by necessity: PennyLane's `decompose` never reaches CZ
+from CNOT, and Kirin/Bloqade has no coupling-map router for this input. Both are
+recorded, not hidden. For a behavioural study this is acceptable; do not headline
+output-quality comparisons.
+
+## Outputs
+
+`results/`
+- `cases.csv` — one row per compilation: status (`ok`, `load_error`, `compile_error`,
+  `timeout`, `crash`), error text, load/compile ms, output op counts, versions, input hash.
+- `events_<toolchain>.csv` — one row per pass execution.
+- `logs/worker_<toolchain>.log` — worker stderr.
+- `run_config.json` — arguments, host, corpus provenance.
+
+`results/merged/` (from `merge_logs.py`; default: `ok` cases only, memory reps excluded)
+- `event_log.csv` — all events + case attributes + `stage`.
+- `event_log_passes.xes` — activity = raw pass name. Mine **per toolchain** (filter on
+  case attribute `toolchain`); the pass vocabularies do not overlap.
+- `event_log_stages.xes` — activity = ontology stage, pure control-flow wrappers
+  removed, consecutive repeats collapsed. The **cross-toolchain** view.
+- `event_log.ocel.sqlite` (`--ocel`) — OCEL 2.0. Object types: compilation,
+  circuit, toolchain, pass, stage. Every event links to its compilation, circuit
+  and toolchain; pass events also link to their pass and stage.
+
+Most failed compilations run no pass at all: load errors, timeouts, crashes, and
+BQSKit refusing to build a workflow. `--include-failed` alone therefore only adds
+the failures that ran at least one pass. `--outcome-events` ends every case with
+one event named after its status (`compilation ok`, `load error`,
+`compile error`, `timeout`, `crash`). With it, every compilation is in the log.
+
+Event columns: `event_index` (order within case — sort by this, not timestamp),
+`activity`, `activity_module`, `pass_kind`, `nesting_depth`, `parent_activity`
+(Qiskit: its native stage), `is_container`, `iteration` (nth occurrence of this pass in
+the case), `start_unix_ns`, `duration_ns` (tracing overhead subtracted), `ir_changed`,
+`changed_method`, `size_before`, `size_after`, `mem_peak_bytes`.
+
+## Caveats to state in the paper
+
+- **`ir_changed` is defined per toolchain** (`changed_method` column): DAG fingerprint
+  (Qiskit), circuit equality (Cirq), tape fingerprint (PennyLane), circuit fingerprint
+  (BQSKit), `RewriteResult.has_done_something` (Kirin — "a rewrite fired", which can be
+  true even if the net IR is unchanged).
+- **Memory** is `tracemalloc` peak: Python heap only. Qiskit's Rust core is invisible
+  to it. Exact for leaf passes; for container passes it covers only the time since the
+  last child started. BQSKit: not recorded (passes run in runtime worker processes).
+- **BQSKit durations** are wall-clock inside its cooperative async runtime; a pass that
+  awaits sub-tasks includes interleaved work.
+- **Analysis passes never change the IR by design** — use `pass_kind` to separate them
+  before reporting a "no-op" rate.
+
+## Coverage findings from the smoke tests
+
+These are results, not bugs in the pipeline:
+- Cirq's QASM importer rejects `barrier`; with barriers stripped it still rejects
+  Qiskit's 4-parameter `cu`.
+- PennyLane has no usable native QASM 2 parser: `qml.from_qasm` requires
+  `pennylane-qiskit`, i.e. Qiskit's parser. The native `from_qasm3` rejects `include`.
+- BQSKit's default workflow refuses gates wider than `max_synthesis_size=3`
+  (e.g. `dj_indep_n004`).
+- Bloqade's `QASM2Py` does not convert the `pi` constant, so the parallelisation
+  analysis fails on circuits using it — a candidate upstream issue.
+- `qiskit-qasm3-import` does not support the `^` operator (`ghz_dynamic_indep_n005`).
+- Only Qiskit can compile the QASM3-only (Tier B) circuits.
+
+## Runtime
+
+The full run is dominated by BQSKit (2–6 s per small circuit in the smoke test vs.
+milliseconds for the others; synthesis grows steeply with width). Use `--dry-run` for
+the job count, run a smoke test first, and plan it as an overnight job. `--timeout`
+(default 600 s) bounds the worst case per compilation.
+
+## Licences
+
+pm4py is AGPL-3.0 (fine for research; relevant if merged into a commercial product).
+Toolchains keep their own licences. Cite MQT Bench for the corpus.
 | Corpus: 338 manifest circuits, 337 compiled (≤ 32 qubits), 35 algorithms, 13 stress classes, 176 CORE / 161 EXTENDED, tiers A 156 / A-EXT 152 / B 29 | `qcm-corpus-v1/manifest.csv`; `stats.tex` |
 | Toolchain versions | `versions` column of every `cases.csv` |
 | Pipelines, tracing hooks, IR-change tests (Table I) | `toolchains/<tc>/run_corpus.py` |

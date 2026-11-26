@@ -11,6 +11,10 @@ Cirq has no pass manager, so the pipeline is Cirq's documented
   optimize_for_target_gateset -> merge_single_qubit_gates_to_phxz ->
   eject_phased_paulis -> eject_z -> drop_negligible_operations ->
   drop_empty_moments
+optimize_for_target_gateset runs once by default (Cirq's own default,
+max_num_passes=1). The job's opt_level for "cirq" overrides it: an integer
+is passed as max_num_passes, and "converge" passes None, which repeats
+until the circuit stops changing.
 Every @cirq.transformer call, including the ones nested inside
 optimize_for_target_gateset, is captured through a TransformerLogger.
 RouteCQC is not a logged transformer, so it is timed explicitly.
@@ -30,6 +34,7 @@ import networkx as nx
 from cirq.contrib.qasm_import import circuit_from_qasm
 
 TOOLCHAIN = "cirq"
+DEFAULT_MAX_NUM_PASSES = 1  # Cirq's own default for optimize_for_target_gateset
 VERSIONS = {"cirq-core": version("cirq-core"), "ply": version("ply")}
 FIELDS = ["case_id", "run_token", "toolchain", "phase", "event_index", "seq",
           "activity", "activity_module", "pass_kind", "nesting_depth",
@@ -136,7 +141,11 @@ def compile_circuit(circ, job, rec):
     ctx = cirq.TransformerContext(logger=lg)
     gs = cirq.CZTargetGateset()
 
-    c = cirq.optimize_for_target_gateset(circ, gateset=gs, context=ctx)
+    level = job["opt_level"].get(TOOLCHAIN, DEFAULT_MAX_NUM_PASSES)
+    passes = None if level == "converge" else int(level)
+
+    c = cirq.optimize_for_target_gateset(circ, gateset=gs, context=ctx,
+                                         max_num_passes=passes)
 
     # RouteCQC: not a @transformer, time it explicitly
     seq, before, size = rec.next_seq(), c, n_ops(c)
@@ -151,7 +160,7 @@ def compile_circuit(circ, job, rec):
             changed_method="circuit_equality", size_before=size,
             size_after=n_ops(c), mem_peak_bytes=mem_peak())
 
-    c = cirq.optimize_for_target_gateset(c, gateset=gs, context=ctx)
+    c = cirq.optimize_for_target_gateset(c, gateset=gs, context=ctx, max_num_passes=passes)
     for tf in (cirq.merge_single_qubit_gates_to_phxz, cirq.eject_phased_paulis,
                cirq.eject_z, cirq.drop_negligible_operations,
                cirq.drop_empty_moments):

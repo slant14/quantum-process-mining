@@ -1,2 +1,4 @@
 *.xes filter=lfs diff=lfs merge=lfs -text
 results/**/*.csv filter=lfs diff=lfs merge=lfs -text
+results/**/*.sqlite filter=lfs diff=lfs merge=lfs -text
+results/**/*.xes.gz filter=lfs diff=lfs merge=lfs -text

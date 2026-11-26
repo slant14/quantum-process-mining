@@ -12,9 +12,17 @@ expressions, which the parallelisation analysis requires.
 
 Tracing: every kirin.passes.Pass subclass has its unsafe_run wrapped,
 so passes that run without being configured (Fold, HintConst,
-TypeInfer, ... called from inside other passes, and every fixpoint
-iteration) are all recorded, with nesting depth and parent.
+TypeInfer, ... called from inside other passes) are all recorded, with
+nesting depth and parent. Inside passes, every iteration of a
+kirin.rewrite.Fixpoint (a rewrite rule applied until it stops changing
+the IR) is one event of pass_kind "rewrite_iteration", named after the
+rules it applies, e.g. Fixpoint[ConstantFold+DeadCodeElimination]. The
+number of iterations depends on the circuit. Rewrite iterations do not
+make their pass a container, and record no memory (resetting the
+tracemalloc peak would truncate the enclosing pass's peak).
 ir_changed is Kirin's own RewriteResult.has_done_something.
+Tracing overhead (IR size walks, bookkeeping) is subtracted from every
+enclosing event.
 
 No routing: Kirin/Bloqade has no coupling-map router for this input;
 the job's device is ignored and this is recorded, not hidden.
@@ -32,6 +40,7 @@ from importlib.metadata import version
 import bloqade.qasm2 as q2
 from bloqade.qasm2.passes import QASM2Fold, QASM2Py, UOpToParallel
 from kirin.passes import Pass
+from kirin.rewrite import Fixpoint
 
 TOOLCHAIN = "kirin"
 VERSIONS = {"kirin-toolchain": version("kirin-toolchain"),
@@ -43,7 +52,7 @@ FIELDS = ["case_id", "run_token", "toolchain", "phase", "event_index", "seq",
           "duration_ns", "ir_changed", "changed_method", "size_before",
           "size_after", "mem_peak_bytes"]
 
-_CTX = {"rec": None, "stack": [], "phase": "compile"}
+_CTX = {"rec": None, "stack": [], "phase": "compile", "overhead": 0}
 
 
 class Recorder:
@@ -91,6 +100,27 @@ def _subclasses(cls):
     return out
 
 
+def node_size(node):
+    try:
+        return sum(1 for _ in node.walk())
+    except Exception:
+        return ""
+
+
+def rule_name(rule):
+    """Readable name of a rewrite rule tree: Walk/Fixpoint unwrap, Chain joins with '+'."""
+    if hasattr(rule, "rules"):
+        return "+".join(rule_name(r) for r in rule.rules)
+    if hasattr(rule, "rule"):
+        return rule_name(rule.rule)
+    return type(rule).__name__
+
+
+def _overhead_since(o0):
+    """Charge tracer work done since o0 to every enclosing timed event."""
+    _CTX["overhead"] += time.perf_counter_ns() - o0
+
+
 def install_tracing():
     """Wrap unsafe_run on every Pass subclass (idempotent; re-run per job)."""
     for cls in _subclasses(Pass):
@@ -104,6 +134,7 @@ def install_tracing():
                 rec = _CTX["rec"]
                 if rec is None:
                     return orig(self, mt)
+                o0 = time.perf_counter_ns()
                 stack = _CTX["stack"]
                 frame = {"seq": rec.next_seq(), "children": 0,
                          "parent": stack[-1]["name"] if stack else "",
@@ -114,13 +145,15 @@ def install_tracing():
                 stack.append(frame)
                 if tracemalloc.is_tracing():
                     tracemalloc.reset_peak()
-                wall, t0 = time.time_ns(), time.perf_counter_ns()
+                _overhead_since(o0)
+                ov0, wall, t0 = _CTX["overhead"], time.time_ns(), time.perf_counter_ns()
                 result = None
                 try:
                     result = orig(self, mt)
                     return result
                 finally:
-                    dur = time.perf_counter_ns() - t0
+                    t1 = time.perf_counter_ns()
+                    dur = (t1 - t0) - (_CTX["overhead"] - ov0)
                     mem = tracemalloc.get_traced_memory()[1] if tracemalloc.is_tracing() else ""
                     stack.pop()
                     rec.add(seq=frame["seq"], phase=_CTX["phase"], activity=cls.__name__,
@@ -132,10 +165,67 @@ def install_tracing():
                             ir_changed=getattr(result, "has_done_something", ""),
                             changed_method="rewrite_result", size_before=frame["size"],
                             size_after=ir_size(mt), mem_peak_bytes=mem)
+                    _overhead_since(t1)
             unsafe_run._qcm_traced = True
             return unsafe_run
 
         cls.unsafe_run = make(cls, orig)
+
+
+def install_fixpoint_tracing():
+    """Record every iteration of Kirin's own Fixpoint loop (idempotent).
+
+    Kirin's loop is left untouched: for the duration of one Fixpoint.rewrite
+    call, the inner rule's rewrite method is shadowed on that instance by a
+    timing wrapper, so each call the loop makes becomes one event.
+    """
+    orig = Fixpoint.rewrite
+    if getattr(orig, "_qcm_traced", False):
+        return
+
+    @functools.wraps(orig)
+    def rewrite(self, node):
+        rec = _CTX["rec"]
+        rule = self.rule
+        if rec is None:
+            return orig(self, node)
+        name, inner = f"Fixpoint[{rule_name(rule)}]", rule.rewrite
+
+        def traced(n):
+            o0 = time.perf_counter_ns()
+            stack = _CTX["stack"]
+            seq, depth = rec.next_seq(), len(stack)
+            parent = stack[-1]["name"] if stack else ""
+            size0 = node_size(n)
+            _overhead_since(o0)
+            ov0, wall, t0 = _CTX["overhead"], time.time_ns(), time.perf_counter_ns()
+            result = None
+            try:
+                result = inner(n)
+                return result
+            finally:
+                t1 = time.perf_counter_ns()
+                rec.add(seq=seq, phase=_CTX["phase"], activity=name,
+                        activity_module=Fixpoint.__module__, pass_kind="rewrite_iteration",
+                        nesting_depth=depth, parent_activity=parent, is_container=False,
+                        start_unix_ns=wall, duration_ns=(t1 - t0) - (_CTX["overhead"] - ov0),
+                        ir_changed=getattr(result, "has_done_something", ""),
+                        changed_method="rewrite_result", size_before=size0,
+                        size_after=node_size(n), mem_peak_bytes="")
+                _overhead_since(t1)
+
+        prev = rule.__dict__.get("rewrite")
+        object.__setattr__(rule, "rewrite", traced)
+        try:
+            return orig(self, node)
+        finally:
+            if prev is None:
+                object.__delattr__(rule, "rewrite")
+            else:
+                object.__setattr__(rule, "rewrite", prev)
+
+    rewrite._qcm_traced = True
+    Fixpoint.rewrite = rewrite
 
 
 def load(job):
@@ -159,7 +249,8 @@ def run_job(job, events_path):
            "versions": VERSIONS, "pid": os.getpid(), "note": "no routing"}
     rec = Recorder(job)
     install_tracing()
-    _CTX.update(rec=rec, stack=[])
+    install_fixpoint_tracing()
+    _CTX.update(rec=rec, stack=[], overhead=0)
     try:
         try:
             _CTX["phase"] = "load"

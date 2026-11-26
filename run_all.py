@@ -156,7 +156,7 @@ def main():
     ap.add_argument("--corpus", default=os.path.join(HERE, "..", "qcm-corpus-v1"))
     ap.add_argument("--out", default=os.path.join(HERE, "results"))
     ap.add_argument("--toolchains", default=",".join(TOOLCHAINS))
-    ap.add_argument("--selection", default="CORE", choices=["CORE", "ALL"])
+    ap.add_argument("--selection", default="CORE", choices=["CORE", "EXTENDED", "ALL"])
     ap.add_argument("--tiers", default="A,A-EXT,B", help="portability tiers to include")
     ap.add_argument("--max-qubits", type=int, default=32)
     ap.add_argument("--algorithms", default="", help="comma list; empty = all")
@@ -170,7 +170,8 @@ def main():
     ap.add_argument("--timeout", type=float, default=600, help="seconds per compilation")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--opt-level", default="",
-                    help='JSON overrides, e.g. {"qiskit":3}; default = each toolchain\'s own default')
+                    help='JSON overrides, e.g. {"qiskit":3,"bqskit":2,"cirq":"converge"}; '
+                         'default = each toolchain\'s own default')
     ap.add_argument("--python", default="",
                     help='JSON {toolchain: interpreter}; default toolchains/<tc>/.venv/bin/python')
     ap.add_argument("--dry-run", action="store_true")
@@ -189,7 +190,7 @@ def main():
     rows = list(csv.DictReader(open(os.path.join(corpus, "manifest.csv"))))
     sel = [r for r in rows
            if r["portability_tier"] in tiers
-           and (args.selection == "ALL" or r["selection_tier"] == "CORE")
+           and args.selection in ("ALL", r["selection_tier"])
            and int(r["num_qubits"]) <= args.max_qubits
            and (not algos or r["algorithm"] in algos)]
     fileless = [r for r in sel if not r["qasm2_path"] and not r["qasm3_path"]]
