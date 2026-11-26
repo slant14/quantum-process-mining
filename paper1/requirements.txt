@@ -1,0 +1,10 @@
+# Paper 1 analysis environment (issue #1). Python >= 3.11 (pandas 3 needs it).
+# pandas and pm4py match the repository's requirements.txt and the data paper
+# (pm4py 2.7.23.8 was used for the process-mining example).
+pandas==3.0.2
+pm4py==2.7.23.8
+pyarrow==21.0.0
+matplotlib==3.10.3
+# pm4py needs cvxopt. 1.3.3 has no prebuilt wheel for macOS arm64 / Python 3.12 and its
+# source build fails without SuiteSparse; 1.3.2 installs as a wheel.
+cvxopt==1.3.2

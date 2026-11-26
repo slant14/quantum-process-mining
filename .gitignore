@@ -1,3 +1,10 @@
 .venv
 .DS_Store
 resutls/merged/
+
+# raw dataset copies at the repository root (e.g. data/QCM_event_log.csv)
+/data/
+# paper 1: local data and caches; only the checksums are tracked
+paper1/data/*
+!paper1/data/CHECKSUMS.txt
+__pycache__/

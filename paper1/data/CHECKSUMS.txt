@@ -1,0 +1,2 @@
+cfb2fc7397130fe94659bf72dc0bc595974e16c38adf99dbf01d05d6cf49ff6a  QCM_event_log.csv  (source CSV, 647,143,130 bytes)
+b4784c4b6e31e4f56c65ab53736d18f0401bedd322487625f0c36a7422aa7534  event_log_raw.parquet  (local cache, pandas 3.0.2, pyarrow 21.0.0; differs between machines)
